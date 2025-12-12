@@ -3,209 +3,867 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Karaoke: I Think They Call This Love</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap"
-        rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 I Think They Call This Love - Karaoke</title>
+
+    <!-- All CSS in one file - ZERO external requests -->
+    <style>
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .title {
+            font-size: 2em;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bceff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* LYRICS CONTAINER */
+        .lyrics-container {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* LYRICS */
+        .lyric-line {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+        }
+
+        .lyric-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lyric-line.active {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(107, 206, 255, 0.2));
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .lyric-line.passed {
+            opacity: 0.5;
+        }
+
+        .text-container {
+            font-size: 1.3em;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .word {
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 0 2px;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .word.active {
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .word.highlight {
+            color: #ffd93d;
+            font-weight: 600;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translate(50%, -50%);
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+        }
+
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-play {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-play.playing {
+            background: linear-gradient(135deg, #6bceff, #8edbff);
+            box-shadow: 0 8px 25px rgba(107, 206, 255, 0.4);
+        }
+
+        /* VOLUME */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .volume-slider {
+            width: 60%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.8);
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* LOADING */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 41, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+
+            .title {
+                font-size: 1.6em;
+            }
+
+            .text-container {
+                font-size: 1.1em;
+            }
+
+            .lyrics-container {
+                max-height: 40vh;
+                padding: 15px;
+            }
+
+            .lyric-line {
+                padding: 12px;
+            }
+
+            .btn {
+                width: 55px;
+                height: 55px;
+                font-size: 1.2em;
+            }
+
+            .btn-play {
+                width: 65px;
+                height: 65px;
+            }
+
+            .stats {
+                gap: 10px;
+            }
+
+            .stat {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.4em;
+            }
+
+            .text-container {
+                font-size: 1em;
+            }
+
+            .btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            .btn-play {
+                width: 60px;
+                height: 60px;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+        }
+
+        /* SCROLLBAR */
+        .lyrics-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .lyrics-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .lyrics-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #ff6b6b, #6bceff);
+            border-radius: 3px;
+        }
+    </style>
 </head>
 
 <body>
-    <!--Загаловок-->
-    <div class="mobile-header">
-        <div class="mobile-title">
-            <span class="title-main">I Think They Call This</span>
-            <span class="title-love">Love</span>
-        </div>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="loader"></div>
+        <p>Loading karaoke player...</p>
     </div>
 
     <!-- Main App -->
-    <div id="app">
-        <!-- Animated Background -->
-        <div class="background">
-            <div class="particles"></div>
-            <div class="floating-hearts"></div>
+    <div class="container" id="app" style="display: none;">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">I Think They Call This Love</h1>
+            <div class="subtitle">Sing along with synchronized lyrics</div>
         </div>
 
-        <!-- Main Container -->
-        <div class="container">
-            <!-- Desktop Header (Hidden on Mobile) -->
-            <header class="desktop-header">
-                <h1 class="title">
-                    <span class="title-text">I Think They Call This</span>
-                    <span class="love-word">Love</span>
-                </h1>
-                <div class="music-notes">
-                    <div class="music-note">♪</div>
-                    <div class="music-note">♫</div>
-                </div>
-            </header>
+        <!-- Lyrics -->
+        <div class="lyrics-container" id="lyricsContainer">
+            <!-- Lyrics will be loaded dynamically -->
+        </div>
 
-            <!-- Lyrics Display - Top on Mobile -->
-            <div class="lyrics-container" :class="{expanded: isLyricsExpanded}">
-                <div class="lyrics-header">
-                    <div class="current-time-mobile">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</div>
-                    <button class="expand-btn" @click="toggleLyrics">
-                        <i :class="isLyricsExpanded ? 'fas fa-compress' : 'fas fa-expand'"></i>
-                    </button>
-                </div>
-
-                <div class="lyrics-scroll" ref="lyricsScroll">
-                    <div v-for="(line, index) in lyrics" :key="index" :class="getLineClass(index)"
-                        @click="seekToLine(index)">
-                        <div class="text-container">
-                            <span v-for="(word, wordIndex) in line.words" :key="wordIndex"
-                                :class="getWordClass(index, wordIndex, word)">
-                                {{ word }}
-                            </span>
-                        </div>
-                        <div class="line-progress" v-if="currentLine === index">
-                            <div class="line-progress-bar" :style="{width: lineProgress + '%'}"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Current Line Highlight on Mobile -->
-                <div class="current-line-mobile" v-if="!isLyricsExpanded">
-                    <div class="current-line-text">
-                        <span v-for="(word, wordIndex) in currentLineText.words" :key="wordIndex"
-                            :class="{'mobile-word': true, 'active': currentLineText.activeWords.includes(wordIndex)}">
-                            {{ word }}
-                        </span>
-                    </div>
-                    <div class="mobile-progress">
-                        <div class="mobile-progress-bar" :style="{width: lineProgress + '%'}"></div>
-                    </div>
-                </div>
+        <!-- Player -->
+        <div class="progress-container">
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
 
-            <!-- Player Controls -->
-            <div class="player-container">
-                <!-- Progress Bar -->
-                <div class="progress-container">
-                    <div class="time-display">
-                        <span class="current-time">{{ formatTime(currentTime) }}</span>
-                        <span class="total-time">{{ formatTime(duration) }}</span>
-                    </div>
-                    <div class="progress-bar" @click="seek">
-                        <div class="progress" :style="{width: progress + '%'}">
-                            <div class="progress-thumb"></div>
-                        </div>
-                        <div class="waveform">
-                            <div v-for="n in 30" :key="n" class="wave-bar" :style="{height: getWaveHeight(n) + 'px'}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Controls -->
-                <div class="player-controls">
-                    <button class="control-btn restart-btn" @click="restart" title="Restart">
-                        <i class="fas fa-redo"></i>
-                    </button>
-
-                    <button class="control-btn play-btn" @click="togglePlay" :class="{playing: isPlaying}">
-                        <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
-                    </button>
-
-                    <button class="control-btn mute-btn" @click="toggleMute" :class="{muted: isMuted}">
-                        <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
-                    </button>
-                </div>
-
-                <!-- Volume Control -->
-                <div class="volume-control">
-                    <i class="fas fa-volume-down"></i>
-                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" :value="volume"
-                        @input="changeVolume">
-                    <i class="fas fa-volume-up"></i>
-                </div>
-
-                <!-- Speed Control -->
-                <div class="speed-control">
-                    <span>Speed:</span>
-                    <button class="speed-btn" v-for="speed in speeds" :key="speed" @click="setSpeed(speed)"
-                        :class="{active: playbackRate === speed}">
-                        {{ speed }}x
-                    </button>
-                </div>
+            <div class="controls">
+                <button class="btn" id="restartBtn" title="Restart">↻</button>
+                <button class="btn btn-play" id="playBtn" title="Play/Pause">▶</button>
+                <button class="btn" id="muteBtn" title="Mute/Unmute">🔊</button>
             </div>
 
-            <!-- Stats -->
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-value">{{ accuracy }}%</div>
-                    <div class="stat-label">Sync</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-icon">🔥</div>
-                    <div class="stat-value">{{ streak }}</div>
-                    <div class="stat-label">Streak</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-icon">❤️</div>
-                    <div class="stat-value">{{ score }}</div>
-                    <div class="stat-label">Score</div>
-                </div>
-            </div>
-
-            <!-- Auto-Scroll Toggle -->
-            <div class="auto-scroll">
-                <label class="toggle-switch">
-                    <input type="checkbox" v-model="autoScroll">
-                    <span class="toggle-slider"></span>
-                </label>
-                <span class="toggle-label">Auto-scroll lyrics</span>
+            <div class="volume-control">
+                <span style="opacity:0.7;">Vol:</span>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
             </div>
         </div>
 
-        <!-- Audio Element -->
-        <audio ref="audio" preload="auto" @timeupdate="updateTime" @loadedmetadata="setDuration" @ended="onSongEnd"
-            @play="onPlay" @pause="onPause">
-            <!-- Use your local audio file -->
-            <source src="song.mp3" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" v-if="isLoading">
-            <div class="loader">
-                <div class="music-loader">
-                    <div class="note">♪</div>
-                    <div class="note">♫</div>
-                    <div class="note">♪</div>
-                </div>
-                <p>Loading song...</p>
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="accuracy">95%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="streak">24</div>
+                <div class="stat-label">Streak</div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-value" id="score">1560</div>
+                <div class="stat-label">Score</div>
             </div>
         </div>
 
-        <!-- Tutorial Overlay -->
-        <div class="tutorial-overlay" v-if="showTutorial">
-            <div class="tutorial-content">
-                <h3>How to Use</h3>
-                <ul>
-                    <li><i class="fas fa-play"></i> Tap play to start</li>
-                    <li><i class="fas fa-expand"></i> Expand lyrics for full view</li>
-                    <li><i class="fas fa-redo"></i> Tap lyrics to jump to time</li>
-                    <li><i class="fas fa-volume-up"></i> Adjust volume with slider</li>
-                </ul>
-                <button class="got-it-btn" @click="closeTutorial">Got it!</button>
-            </div>
+        <!-- Tips -->
+        <div style="text-align:center; font-size:0.9em; opacity:0.7; margin-top:15px;">
+            Click on lyrics to jump to that time | Adjust volume with slider
         </div>
     </div>
-    <div class="footer">
-    <p>&copy; 2025 Веб-приложение Karaokes. Все права защищены.</p>
+
+    <!-- Audio Element -->
+    <audio id="audioPlayer" preload="auto">
+        <source src="song.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <footer>
+        p>&copy; 2025 Веб-приложение Karaokes. Все права защищены.</p>
     <p>Разработано <a href="https://github.com/olimshoh" target="_blank">Бутаев Олимшох</a> | <a href="privacy.html">Политика конфиденциальности</a></p>
-</div>
+    </footer>
+        
 
+    
 
+    <!-- All JavaScript in one file -->
+    <script>
+        // Configuration
+        const CONFIG = {
+            // Your EXACT timings
+            lyrics: [
+                // Verse 1
+                { time: 10, words: ["They", "say,", "you", "know", "when", "you", "know"] },
+                { time: 16, words: ["So", "let's", "face", "it,", "you", "had", "me", "at", "hello"] },
+                { time: 25, words: ["Hesitation", "never", "helps"] },
+                { time: 29, words: ["How", "could", "this", "be", "anything,", "anything", "else?"] },
 
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="script.js"></script>
+                // Chorus 1
+                { time: 33, words: ["When", "all", "I", "dream", "of", "is", "your", "eyes"] },
+                { time: 38, words: ["All", "I", "long", "for", "is", "your", "touch"] },
+                { time: 41, words: ["And,", "darling,", "something", "tells", "me", "that's", "enough,", "mmm"] },
+                { time: 49, words: ["You", "can", "say", "that", "I'm", "a", "fool"] },
+                { time: 52, words: ["And", "I", "don't", "know", "very", "much"] },
+                { time: 55, words: ["But", "I", "think", "they", "call", "this", "love"] },
+
+                // Verse 2
+                { time: 65, words: ["One", "smile,", "one", "kiss,", "two", "lonely", "hearts", "is", "all", "that", "it", "takes"] },
+                { time: 72, words: ["Now,", "baby,", "you're", "on", "my", "mind", "every", "night,", "every", "day"] },
+                { time: 80, words: ["Good", "vibrations", "getting", "loud"] },
+                { time: 85, words: ["How", "could", "this", "be", "anything,", "anything", "else?"] },
+
+                // Chorus 2
+                { time: 88, words: ["When", "all", "I", "dream", "of", "is", "your", "eyes"] },
+                { time: 93, words: ["All", "I", "long", "for", "is", "your", "touch"] },
+                { time: 97, words: ["And", "darling", "something", "tells", "me", "that's", "enough,", "mmm"] },
+                { time: 102, words: ["You", "can", "say", "that", "I'm", "a", "fool"] },
+                { time: 106, words: ["And", "I", "don't", "know", "very", "much"] },
+                { time: 110, words: ["But", "I", "think", "they", "call", "this", "love"] },
+                { time: 116, words: ["Oh,", "I", "think", "they", "call", "this", "love"] },
+                { time: 120, words: ["ho hoo hooo oo"] },
+
+                // Bridge
+                { time: 135, words: ["What", "could", "this", "be?"] },
+                { time: 138, words: ["Between", "you", "and", "me"] },
+
+                // Final Chorus
+                { time: 144, words: ["All", "I", "dream", "of", "is", "your", "eyes"] },
+                { time: 148, words: ["All", "I", "long", "for", "is", "your", "touch"] },
+                { time: 150, words: ["And,", "darling,", "something", "tells", "me,", "tells", "me", "it's", "enough,", "mmm"] },
+                { time: 158, words: ["You", "could", "say", "that", "I'm", "a", "fool"] },
+                { time: 160, words: ["And", "I", "don't", "know", "very", "much"] },
+                { time: 165, words: ["But", "I", "think", "they", "call"] },
+                { time: 169, words: ["Oh,", "I", "think", "they", "call"] },
+                { time: 172, words: ["Yes,", "I", "think", "they", "call", "this", "love"] },
+                { time: 179, words: ["This", "love"] }
+            ]
+        };
+
+        // App State
+        const state = {
+            audio: null,
+            isPlaying: false,
+            isMuted: false,
+            currentTime: 0,
+            duration: 0,
+            currentLine: 0,
+            volume: 0.7,
+            accuracy: 95,
+            streak: 24,
+            score: 1560,
+            wordTimers: []
+        };
+
+        // DOM Elements
+        const elements = {};
+
+        // Initialize App
+        function init() {
+            cacheElements();
+            setupAudio();
+            renderLyrics();
+            setupEventListeners();
+
+            // Hide loading after 1 second or when audio loads
+            setTimeout(hideLoading, 1000);
+        }
+
+        // Cache DOM Elements
+        function cacheElements() {
+            elements.app = document.getElementById('app');
+            elements.loading = document.getElementById('loading');
+            elements.lyricsContainer = document.getElementById('lyricsContainer');
+            elements.currentTime = document.getElementById('currentTime');
+            elements.totalTime = document.getElementById('totalTime');
+            elements.progressFill = document.getElementById('progressFill');
+            elements.progressBar = document.getElementById('progressBar');
+            elements.playBtn = document.getElementById('playBtn');
+            elements.restartBtn = document.getElementById('restartBtn');
+            elements.muteBtn = document.getElementById('muteBtn');
+            elements.volumeSlider = document.getElementById('volumeSlider');
+            elements.accuracy = document.getElementById('accuracy');
+            elements.streak = document.getElementById('streak');
+            elements.score = document.getElementById('score');
+            elements.audioPlayer = document.getElementById('audioPlayer');
+        }
+
+        // Setup Audio
+        function setupAudio() {
+            state.audio = elements.audioPlayer;
+            state.audio.volume = state.volume;
+
+            // Audio Events
+            state.audio.addEventListener('loadedmetadata', () => {
+                state.duration = state.audio.duration;
+                elements.totalTime.textContent = formatTime(state.duration);
+                hideLoading();
+            });
+
+            state.audio.addEventListener('timeupdate', updatePlayer);
+            state.audio.addEventListener('ended', () => {
+                state.isPlaying = false;
+                updatePlayButton();
+            });
+
+            state.audio.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                hideLoading();
+                alert('Error loading song.mp3. Please make sure the file exists in the same folder.');
+            });
+
+            // Auto-play when enough data is loaded
+            state.audio.addEventListener('canplay', () => {
+                hideLoading();
+            });
+        }
+
+        // Hide Loading Screen
+        function hideLoading() {
+            elements.loading.style.display = 'none';
+            elements.app.style.display = 'block';
+        }
+
+        // Render Lyrics
+        function renderLyrics() {
+            const lyricsHTML = CONFIG.lyrics.map((line, index) => {
+                const wordsHTML = line.words.map((word, wordIndex) => {
+                    const isHighlight = ['love', 'eyes', 'touch', 'heart', 'darling', 'baby', 'kiss']
+                        .some(keyword => word.toLowerCase().includes(keyword));
+
+                    return `<span class="word ${isHighlight ? 'highlight' : ''}" 
+                               data-line="${index}" 
+                               data-word="${wordIndex}">${word}</span>`;
+                }).join(' ');
+
+                return `
+                    <div class="lyric-line" data-index="${index}" data-time="${line.time}">
+                        <div class="text-container">${wordsHTML}</div>
+                    </div>
+                `;
+            }).join('');
+
+            elements.lyricsContainer.innerHTML = lyricsHTML;
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Play/Pause
+            elements.playBtn.addEventListener('click', togglePlay);
+
+            // Restart
+            elements.restartBtn.addEventListener('click', restartSong);
+
+            // Mute
+            elements.muteBtn.addEventListener('click', toggleMute);
+
+            // Volume
+            elements.volumeSlider.addEventListener('input', (e) => {
+                state.volume = e.target.value / 100;
+                state.audio.volume = state.volume;
+            });
+
+            // Progress Bar Seek
+            elements.progressBar.addEventListener('click', seekToTime);
+
+            // Lyrics Click
+            elements.lyricsContainer.addEventListener('click', (e) => {
+                const lineElement = e.target.closest('.lyric-line');
+                if (lineElement) {
+                    const time = parseFloat(lineElement.dataset.time);
+                    seekToLyric(time);
+                }
+            });
+
+            // Auto-update stats while playing
+            setInterval(updateStats, 1000);
+
+            // Preload audio on user interaction
+            document.addEventListener('click', preloadAudio, { once: true });
+        }
+
+        // Preload Audio on first interaction
+        function preloadAudio() {
+            if (state.audio.readyState < 2) {
+                state.audio.load();
+            }
+        }
+
+        // Toggle Play/Pause
+        function togglePlay() {
+            if (state.isPlaying) {
+                state.audio.pause();
+            } else {
+                state.audio.play().catch(e => {
+                    console.log('Playback requires user interaction');
+                    // Try again with a click
+                    document.addEventListener('click', () => {
+                        state.audio.play();
+                    }, { once: true });
+                });
+            }
+            state.isPlaying = !state.isPlaying;
+            updatePlayButton();
+        }
+
+        // Toggle Mute
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            state.audio.muted = state.isMuted;
+            elements.muteBtn.textContent = state.isMuted ? '🔇' : '🔊';
+        }
+
+        // Restart Song
+        function restartSong() {
+            state.audio.currentTime = 0;
+            state.currentLine = 0;
+            updateLyrics();
+            if (!state.isPlaying) {
+                state.audio.play();
+                state.isPlaying = true;
+                updatePlayButton();
+            }
+        }
+
+        // Seek to Time
+        function seekToTime(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            state.audio.currentTime = percent * state.duration;
+        }
+
+        // Seek to Lyric
+        function seekToLyric(time) {
+            state.audio.currentTime = time;
+        }
+
+        // Update Player
+        function updatePlayer() {
+            if (!state.audio) return;
+
+            state.currentTime = state.audio.currentTime;
+
+            // Update time display
+            elements.currentTime.textContent = formatTime(state.currentTime);
+
+            // Update progress bar
+            const progress = (state.currentTime / state.duration) * 100 || 0;
+            elements.progressFill.style.width = progress + '%';
+
+            // Update lyrics highlighting
+            updateLyrics();
+        }
+
+        // Update Lyrics Highlighting
+        function updateLyrics() {
+            // Find current line
+            let newLine = 0;
+            for (let i = 0; i < CONFIG.lyrics.length; i++) {
+                if (state.currentTime >= CONFIG.lyrics[i].time) {
+                    newLine = i;
+                }
+            }
+
+            // Update if line changed
+            if (newLine !== state.currentLine) {
+                state.currentLine = newLine;
+
+                // Remove active class from all lines
+                document.querySelectorAll('.lyric-line').forEach(line => {
+                    line.classList.remove('active', 'passed');
+                });
+
+                // Add classes to lines
+                document.querySelectorAll('.lyric-line').forEach((line, index) => {
+                    if (index < state.currentLine) {
+                        line.classList.add('passed');
+                    } else if (index === state.currentLine) {
+                        line.classList.add('active');
+
+                        // Scroll to active line
+                        line.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        // Highlight words gradually
+                        highlightWords(line, index);
+                    }
+                });
+            }
+        }
+
+        // Highlight Words in Line
+        function highlightWords(lineElement, lineIndex) {
+            // Clear previous timers
+            state.wordTimers.forEach(timer => clearTimeout(timer));
+            state.wordTimers = [];
+
+            const words = lineElement.querySelectorAll('.word');
+            const wordCount = words.length;
+            const lineData = CONFIG.lyrics[lineIndex];
+
+            // Calculate when next line starts
+            const nextLineTime = lineIndex < CONFIG.lyrics.length - 1
+                ? CONFIG.lyrics[lineIndex + 1].time
+                : state.duration;
+            const lineDuration = nextLineTime - lineData.time;
+            const wordInterval = (lineDuration * 1000) / wordCount;
+
+            // Highlight words one by one
+            words.forEach((word, wordIndex) => {
+                const timer = setTimeout(() => {
+                    word.classList.add('active');
+
+                    // Update stats when words are highlighted
+                    if (wordIndex > 0 && state.isPlaying) {
+                        state.accuracy = Math.min(100, state.accuracy + 0.5);
+                        state.streak++;
+                        state.score += 10;
+
+                        elements.accuracy.textContent = Math.round(state.accuracy) + '%';
+                        elements.streak.textContent = state.streak;
+                        elements.score.textContent = state.score;
+                    }
+                }, wordIndex * wordInterval);
+
+                state.wordTimers.push(timer);
+            });
+        }
+
+        // Update Stats
+        function updateStats() {
+            if (state.isPlaying) {
+                // Slight adjustments while playing
+                state.streak++;
+                state.score += 2;
+
+                elements.streak.textContent = state.streak;
+                elements.score.textContent = state.score;
+            }
+        }
+
+        // Update Play Button
+        function updatePlayButton() {
+            elements.playBtn.textContent = state.isPlaying ? '⏸' : '▶';
+            elements.playBtn.classList.toggle('playing', state.isPlaying);
+        }
+
+        // Format Time (MM:SS)
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Initialize on DOM Load
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && state.isPlaying) {
+                state.audio.pause();
+                state.isPlaying = false;
+                updatePlayButton();
+            }
+        });
+    </script>
 </body>
 
-
 </html>
+    
+
+
