@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Karaoke: I Think They Call This Love</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="mobile-title">
+            <span class="title-main">I Think They Call This</span>
+            <span class="title-love">Love</span>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app">
+        <!-- Animated Background -->
+        <div class="background">
+            <div class="particles"></div>
+            <div class="floating-hearts"></div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="container">
+            <!-- Desktop Header (Hidden on Mobile) -->
+            <header class="desktop-header">
+                <h1 class="title">
+                    <span class="title-text">I Think They Call This</span>
+                    <span class="love-word">Love</span>
+                </h1>
+                <div class="music-notes">
+                    <div class="music-note">♪</div>
+                    <div class="music-note">♫</div>
+                </div>
+            </header>
+
+            <!-- Lyrics Display - Top on Mobile -->
+            <div class="lyrics-container" :class="{expanded: isLyricsExpanded}">
+                <div class="lyrics-header">
+                    <div class="current-time-mobile">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</div>
+                    <button class="expand-btn" @click="toggleLyrics">
+                        <i :class="isLyricsExpanded ? 'fas fa-compress' : 'fas fa-expand'"></i>
+                    </button>
+                </div>
+
+                <div class="lyrics-scroll" ref="lyricsScroll">
+                    <div v-for="(line, index) in lyrics" :key="index" :class="getLineClass(index)"
+                        @click="seekToLine(index)">
+                        <div class="text-container">
+                            <span v-for="(word, wordIndex) in line.words" :key="wordIndex"
+                                :class="getWordClass(index, wordIndex, word)">
+                                {{ word }}
+                            </span>
+                        </div>
+                        <div class="line-progress" v-if="currentLine === index">
+                            <div class="line-progress-bar" :style="{width: lineProgress + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Line Highlight on Mobile -->
+                <div class="current-line-mobile" v-if="!isLyricsExpanded">
+                    <div class="current-line-text">
+                        <span v-for="(word, wordIndex) in currentLineText.words" :key="wordIndex"
+                            :class="{'mobile-word': true, 'active': currentLineText.activeWords.includes(wordIndex)}">
+                            {{ word }}
+                        </span>
+                    </div>
+                    <div class="mobile-progress">
+                        <div class="mobile-progress-bar" :style="{width: lineProgress + '%'}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Controls -->
+            <div class="player-container">
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="time-display">
+                        <span class="current-time">{{ formatTime(currentTime) }}</span>
+                        <span class="total-time">{{ formatTime(duration) }}</span>
+                    </div>
+                    <div class="progress-bar" @click="seek">
+                        <div class="progress" :style="{width: progress + '%'}">
+                            <div class="progress-thumb"></div>
+                        </div>
+                        <div class="waveform">
+                            <div v-for="n in 30" :key="n" class="wave-bar" :style="{height: getWaveHeight(n) + 'px'}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Controls -->
+                <div class="player-controls">
+                    <button class="control-btn restart-btn" @click="restart" title="Restart">
+                        <i class="fas fa-redo"></i>
+                    </button>
+
+                    <button class="control-btn play-btn" @click="togglePlay" :class="{playing: isPlaying}">
+                        <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+                    </button>
+
+                    <button class="control-btn mute-btn" @click="toggleMute" :class="{muted: isMuted}">
+                        <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
+                    </button>
+                </div>
+
+                <!-- Volume Control -->
+                <div class="volume-control">
+                    <i class="fas fa-volume-down"></i>
+                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" :value="volume"
+                        @input="changeVolume">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+
+                <!-- Speed Control -->
+                <div class="speed-control">
+                    <span>Speed:</span>
+                    <button class="speed-btn" v-for="speed in speeds" :key="speed" @click="setSpeed(speed)"
+                        :class="{active: playbackRate === speed}">
+                        {{ speed }}x
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">{{ accuracy }}%</div>
+                    <div class="stat-label">Sync</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value">{{ streak }}</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-value">{{ score }}</div>
+                    <div class="stat-label">Score</div>
+                </div>
+            </div>
+
+            <!-- Auto-Scroll Toggle -->
+            <div class="auto-scroll">
+                <label class="toggle-switch">
+                    <input type="checkbox" v-model="autoScroll">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Auto-scroll lyrics</span>
+            </div>
+        </div>
+
+        <!-- Audio Element -->
+        <audio ref="audio" preload="auto" @timeupdate="updateTime" @loadedmetadata="setDuration" @ended="onSongEnd"
+            @play="onPlay" @pause="onPause">
+            <!-- Use your local audio file -->
+            <source src="song.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" v-if="isLoading">
+            <div class="loader">
+                <div class="music-loader">
+                    <div class="note">♪</div>
+                    <div class="note">♫</div>
+                    <div class="note">♪</div>
+                </div>
+                <p>Loading song...</p>
+            </div>
+        </div>
+
+        <!-- Tutorial Overlay -->
+        <div class="tutorial-overlay" v-if="showTutorial">
+            <div class="tutorial-content">
+                <h3>How to Use</h3>
+                <ul>
+                    <li><i class="fas fa-play"></i> Tap play to start</li>
+                    <li><i class="fas fa-expand"></i> Expand lyrics for full view</li>
+                    <li><i class="fas fa-redo"></i> Tap lyrics to jump to time</li>
+                    <li><i class="fas fa-volume-up"></i> Adjust volume with slider</li>
+                </ul>
+                <button class="got-it-btn" @click="closeTutorial">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
